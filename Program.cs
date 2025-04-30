@@ -1,7 +1,23 @@
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddAuthentication("Cookies").AddCookie("Cookies", options =>
+{
+    options.LoginPath = "/Login/Login";
+    options.AccessDeniedPath = "/Login/Login";
+
+    //para que expire la cookie despues de 2 min
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(2);
+
+    // Si querés que se renueve con cada request activa
+    options.SlidingExpiration = true;
+});
+
 
 var app = builder.Build();
 
@@ -18,10 +34,14 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSession(); //para poder usar las variables de sesión 
+
+app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Login}/{action=Login}/{id?}");
 
 app.Run();
